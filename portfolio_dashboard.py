@@ -34,7 +34,72 @@ def load_config():
     return {"concentration_threshold": 0.25, "sector_threshold": 0.40,
             "notion": {"enabled": False}}
 
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUZF0HHHPbDMyVkmr0rlfa1SNlXxFPvirk96lbnFg9I_RW5TObbFA2Zbyd_R0B8A/pub?gid=216230072&single=true&output=csv"
+
+
+def _bucket_from_account(acc):
+    """계좌명에서 bucket(일반/DC/IRP) 추론."""
+    if "DC" in acc:
+        return "DC"
+    if "IRP" in acc:
+        return "IRP"
+    return "일반"
+
+
+def _local_avg_map():
+    """로컬 holdings.csv에서 (ticker→native avg_cost) 매핑. 평단 정확도 유지용."""
+    m = {}
+    try:
+        with open(HOLDINGS_PATH, encoding="utf-8-sig") as f:
+            for r in csv.DictReader(f):
+                t = (r.get("ticker") or "").strip()
+                if t:
+                    m[t] = float(r["avg_cost"])
+    except Exception:
+        pass
+    return m
+
+
+def load_holdings_from_sheet():
+    """구글시트(게시된 CSV)에서 보유종목 읽기. 실패 시 None 반환.
+    수량·종목·계좌는 시트에서, 평단(native)은 로컬 holdings.csv에서 가져온다."""
+    import urllib.request, io
+    try:
+        req = urllib.request.Request(SHEET_CSV_URL, headers={"User-Agent": "Mozilla/5.0"})
+        data = urllib.request.urlopen(req, timeout=20).read().decode("utf-8-sig")
+        avg_map = _local_avg_map()
+        rows = []
+        for r in csv.DictReader(io.StringIO(data)):
+            t = (r.get("티커") or "").strip()
+            if not t:
+                continue
+            shares_raw = (r.get("수량") or "0").replace(",", "").strip()
+            if not shares_raw or shares_raw in ("0", "0.0"):
+                continue
+            mk = "US" if (r.get("시장") or "").strip() in ("미국", "US") else "KR"
+            acc = (r.get("계좌") or "").strip()
+            rows.append({
+                "bucket": _bucket_from_account(acc),
+                "account": acc,
+                "ticker": t,
+                "market": mk,
+                "shares": float(shares_raw),
+                "avg_cost": avg_map.get(t, 0.0),   # native 평단(로컬). 신규종목은 0
+                "name": (r.get("종목명") or "").strip(),
+                "sector": "",
+            })
+        return rows if rows else None
+    except Exception as e:
+        print(f"(구글시트 읽기 실패, 로컬 holdings.csv 사용: {e})")
+        return None
+
+
 def load_holdings():
+    # 1순위: 구글시트, 실패 시 로컬 holdings.csv
+    sheet_rows = load_holdings_from_sheet()
+    if sheet_rows:
+        print(f"  구글시트에서 {len(sheet_rows)}개 종목 읽음")
+        return sheet_rows
     rows = []
     with open(HOLDINGS_PATH, encoding="utf-8-sig") as f:
         for r in csv.DictReader(f):

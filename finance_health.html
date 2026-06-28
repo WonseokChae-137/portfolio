@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>재무건강</title>
+<style>
+:root{--bg:#0f1115;--card:#1a1d24;--line:#2a2e37;--txt:#e6e8ec;--mut:#8b909a;--pos:#22c55e;--neg:#ef4444;--ac:#6366f1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,'Segoe UI','Apple SD Gothic Neo',sans-serif;padding:28px}
+h1{font-size:20px;margin:0 0 2px}.asof{color:var(--mut);font-size:13px;margin-bottom:20px}.mut{color:var(--mut);font-weight:400;font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card .lbl{color:var(--mut);font-size:13px;margin-bottom:6px}.card .big{font-size:23px;font-weight:700}
+.card .sub{color:var(--mut);font-size:12px;margin-top:5px}.pos{color:var(--pos)}.neg{color:var(--neg)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.panel h3{margin:0 0 14px;font-size:15px}
+.gauge{position:relative;height:16px;background:var(--line);border-radius:9px;overflow:visible;margin-bottom:10px}
+.gfill{height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:9px}
+.gtarget{position:absolute;top:-4px;width:2px;height:24px;background:#fff}
+.gtext{display:flex;justify-content:space-between;font-size:13px}
+.rw{margin-bottom:14px}.rwbar{height:8px;border-radius:5px;width:var(--w);min-width:6px}
+.rwbar.green{background:var(--pos)}.rwbar.yellow{background:#f59e0b}.rwbar.red{background:var(--neg)}
+.rwlab{display:flex;justify-content:space-between;font-size:13px;margin-top:5px}.rwlab b{font-size:14px}
+.rwsub{color:var(--mut);font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:500;padding:7px 5px;border-bottom:1px solid var(--line)}
+td{padding:9px 5px;border-bottom:1px solid var(--line)}.num{text-align:right}
+.hint{color:var(--mut);font-size:12px;margin-top:8px}.fx{color:var(--mut);font-size:12px;margin-top:18px}
+.warn{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:10px;padding:11px 13px;font-size:12.5px;margin-bottom:14px;line-height:1.5}
+.est{color:#f59e0b;font-size:11px;font-weight:600;margin-left:6px}
+</style></head><body>
+<h1>🩺 재무건강 대시보드</h1><div class="asof">기준 2026-06-28 16:07</div>
+
+    <div class="cards">
+      <div class="card"><div class="lbl">순자산</div><div class="big pos">11,453,639원</div>
+        <div class="sub">자산 11,863만 − 대출 10,718만</div></div>
+      <div class="card"><div class="lbl">현금 비중</div><div class="big neg">2.9%</div>
+        <div class="sub">목표 20% · 부족 2,029만원</div></div>
+      <div class="card"><div class="lbl">월 대출 상환</div><div class="big">542,718원</div>
+        <div class="sub">이자 451,051원 + 원금 91,667원</div></div>
+    </div>
+
+    <div class="panel"><h3>현금 비중 <span class="mut">(목표 20%)</span></h3>
+      <div class="gauge"><div class="gfill" style="width:2.9%"></div>
+        <div class="gtarget" style="left:20%"></div></div>
+      <div class="gtext"><span class="neg">현재 2.9%</span>
+        <span class="mut">목표 20%까지 2,029만원 부족</span></div>
+    </div>
+
+    <div class="panel"><h3>대출 상환 감당 기간 · 생활비 미반영</h3>
+      <div class="warn">⚠ 이건 <b>대출 이자·원금만 감당하는 기간</b>이라 실제 생존 기간이 아니에요. 생활비를 더하면 훨씬 짧아집니다. finance.yaml의 monthly_living을 채우면 진짜 생존 runway가 나와요.</div>
+      <div class="rw"><div class="rwbar green" style="--w:3%"></div><div class="rwlab"><span>🟢 현금만</span><b>6.3개월 <span class="est">생활비 추정 시 1.1개월</span></b></div><div class="rwsub">진짜 안전선 · 344만원</div></div><div class="rw"><div class="rwbar yellow" style="--w:38%"></div><div class="rwlab"><span>🟡 +마이너스 여력</span><b>82.5개월 <span class="est">생활비 추정 시 14.7개월</span></b></div><div class="rwsub">쓰면 빚 4,134만원 늘어남</div></div><div class="rw"><div class="rwbar red" style="--w:100%"></div><div class="rwlab"><span>🔴 +주식 처분</span><b>218.6개월 <span class="est">생활비 추정 시 39.0개월</span></b></div><div class="rwsub">손실 매도 가정</div></div>
+      <div class="hint">월 유출 542,718원 기준 (대출 상환만).</div>
+    </div>
+
+    <div class="panel"><h3>대출 현황 <span class="mut">· 7건 · 합 10,718만원</span></h3>
+      <table><thead><tr><th>대출</th><th class="num">잔액</th><th class="num">금리</th>
+        <th class="num">월상환</th><th>유형</th></tr></thead><tbody><tr><td>신한 신용</td><td class="num">33,756,739원</td>
+          <td class="num">4.76%</td><td class="num">133,902원</td><td>이자</td></tr><tr><td>제주 직장인</td><td class="num">23,000,000원</td>
+          <td class="num">4.70%</td><td class="num">90,083원</td><td>만기일시</td></tr><tr><td>카뱅 마이너스(사용분)</td><td class="num">16,655,126원</td>
+          <td class="num">5.59%</td><td class="num">77,613원</td><td>마이너스</td></tr><tr><td>신한 예금담보</td><td class="num">12,585,461원</td>
+          <td class="num">5.50%</td><td class="num">57,683원</td><td>이자</td></tr><tr><td>신한 청약담보(야탑)</td><td class="num">12,481,489원</td>
+          <td class="num">4.10%</td><td class="num">42,645원</td><td>이자</td></tr><tr><td>제주 사잇돌</td><td class="num">6,600,000원</td>
+          <td class="num">7.60%</td><td class="num">133,467원</td><td>원금분할</td></tr><tr><td>신한 청약담보(서교동)</td><td class="num">2,097,743원</td>
+          <td class="num">4.19%</td><td class="num">7,325원</td><td>이자</td></tr></tbody></table>
+    </div>
+<div class="fx">진짜 현금·마이너스 여력·대출을 분리 표시합니다. 마이너스 여력은 '쓰면 빚'이라 현금과 다릅니다. 투자·재무 판단은 본인 책임이며, 본 도구는 참고용입니다.</div>
+</body></html>

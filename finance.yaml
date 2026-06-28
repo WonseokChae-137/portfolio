@@ -1,0 +1,42 @@
+# 재무건강 대시보드 입력값 (수동 관리). 금액 바뀌면 이 파일만 고치면 됨.
+# 기준: 각 증권사 앱 화면에서 직접 읽은 실측 평가금액 (2026-06-28).
+# 보험·페이머니·카드이용대금 제외.
+
+cash_target: 0.20
+monthly_income: 3800000
+monthly_living: 0          # 월세 포함해서 파악되면 채우기
+living_estimate: 2500000
+
+# 현금 + 적금 (적금은 현금과 동일 취급)
+#  ※ 키움 예수금은 '인출가능금'(D+2 정산 반영) 기준. 장부 예수금 아님.
+cash:
+  - {name: "키움5154 인출가능금", amount: 2008449}
+  - {name: "키움5978 예수금", amount: 2}
+  - {name: "삼성 외화잔고", amount: 77512}
+  - {name: "적금 (청약+청년도약)", amount: 36600000}
+
+# 일반 증권계좌 주식 (실측 평가금액)
+stocks:
+  - {name: "키움5154 국내주식", amount: 23525200}
+  - {name: "키움5154 미국주식", amount: 1015628}
+  - {name: "키움5978 미국주식", amount: 12917522}
+  - {name: "삼성7081 미국주식", amount: 74848341}
+
+# 연금 (DC + IRP) — 비유동. 순자산 포함, 현금 아님.
+pension:
+  - {name: "미래에셋 DC (ETF+현금성)", amount: 18180803}
+  - {name: "미래에셋 IRP", amount: 2199858}
+
+# 보증금 — 묶인 자산(순자산 포함, 현금비중·runway 제외)
+deposit:
+  - {name: "월세 보증금", amount: 10000000}
+
+# 대출
+loans:
+  - {name: "신한 신용", balance: 33756739, rate: 0.0476, type: "이자"}
+  - {name: "신한 예금담보", balance: 12585461, rate: 0.055, type: "이자"}
+  - {name: "신한 청약담보(야탑)", balance: 12481489, rate: 0.041, type: "이자"}
+  - {name: "신한 청약담보(서교동)", balance: 2097743, rate: 0.0419, type: "이자"}
+  - {name: "제주 직장인", balance: 23000000, rate: 0.047, type: "bullet"}
+  - {name: "제주 사잇돌", balance: 6600000, rate: 0.076, type: "installment", monthly_principal: 91667}
+  - {name: "카뱅 마이너스(사용분)", balance: 16655126, rate: 0.05592, type: "minus", unused: 41344874}

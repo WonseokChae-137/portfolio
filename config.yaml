@@ -1,0 +1,75 @@
+# 쏠림 알림 기준 (비중이 이 값을 넘으면 알림)
+concentration_threshold: 0.25   # 종목 1개 비중 25% 초과 시 알림
+sector_threshold: 0.40          # 섹터 비중 40% 초과 시 알림
+
+# Notion 연동 (3번 기능). 안 쓰면 enabled: false 그대로 두세요.
+notion:
+  enabled: false
+  token: ""              # Notion 내부 통합 토큰 (secret_...)
+  parent_page_id: ""     # DB를 만들 부모 페이지 ID (최초 1회 --setup-notion 용)
+  database_id: ""        # --setup-notion 실행 후 출력된 값을 여기 입력
+
+# 리밸런싱 목표 비중 (총자산=주식+현금성 기준)
+group_targets:
+  1군: 0.50
+  2군: 0.20
+  3군: 0.10
+  현금성: 0.20
+
+# 계좌 역할 (정리 규칙 — 아이디어 3)
+account_roles:
+  삼성7081: "미국 1군"
+  키움5154: "국내주식 전부 + 미국 2군"
+  키움5978: "미국 3군"
+  미래에셋356: "그 외 (미분류)"
+
+# 위즈덤투스 자료의 군별 정식 멤버 전체 (미보유 종목 표시용)
+# 형식: 티커: 표시이름
+group_roster:
+  1군:
+    GOOGL: 구글
+    AMZN: 아마존
+    NVDA: 엔비디아
+    "005930": 삼성전자
+    "000660": SK하이닉스
+    MU: 마이크론
+    AVGO: 브로드컴
+    MRVL: 마벨테크
+    SNDK: 샌디스크
+    EWT: EWT
+    DRAM: DRAM
+    GEV: GE버노바
+    ETN: 이톤
+    "009150": 삼성전기
+    "017670": SK텔레콤
+    "012330": 현대모비스
+  2군:
+    SCHD: SCHD
+    XLF: XLF
+    JPM: JP모건
+    GLD: GLD
+    TJX: TJX
+    COST: 코스트코
+    조선TOP3: 조선TOP3 ETF
+    LLY: 일라이릴리
+    현금성: 현금성자산
+  3군:
+    INTC: 인텔
+    AMD: AMD
+    PLTR: 팔란티어
+    "035420": 네이버
+    ANTHROPIC: 앤트로픽
+    RKLB: 로켓랩
+    UFO: UFO/NASA
+    SPCX: 스페이스X
+    HOOD: 로빈후드
+    IREN: 아이렌
+    DELL: 델컴퓨터
+    BWXT: BWX테크
+    OKLO: 오클로
+    LEU: 센트러스
+    "005380": 현대차
+    "307950": 현대오토에버
+    "011070": LG이노텍
+    "066570": LG전자
+    TSLA: 테슬라

@@ -1,0 +1,392 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>포트폴리오 대시보드</title>
+<style>
+:root{--bg:#0f1115;--card:#1a1d24;--line:#2a2e37;--txt:#e6e8ec;--mut:#8b909a;--pos:#22c55e;--neg:#ef4444;--ac:#6366f1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);
+font-family:-apple-system,'Segoe UI','Apple SD Gothic Neo',sans-serif;padding:28px}
+h1{font-size:20px;margin:0 0 2px}.asof{color:var(--mut);font-size:13px;margin-bottom:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card .lbl{color:var(--mut);font-size:13px;margin-bottom:6px}.card .big{font-size:23px;font-weight:700}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.bhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.panel h3{margin:0;font-size:15px}.bsum{font-size:13px;color:var(--mut)}
+.bsum span{margin-left:10px}.bw{color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:500;padding:7px 5px;border-bottom:1px solid var(--line)}
+td{padding:9px 5px;border-bottom:1px solid var(--line)}.num{text-align:right}
+.tk{display:block;color:var(--mut);font-size:11px;margin-top:2px}
+.srow{display:flex;align-items:center;gap:10px;margin-bottom:11px;font-size:13px}
+.slabel{width:130px}.sbar{flex:1;height:8px;background:var(--line);border-radius:5px;overflow:hidden}
+.sbar span{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.sval{width:46px;text-align:right;color:var(--mut)}
+.alerts{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--neg);border-radius:12px;padding:16px;margin-top:16px}
+.alerts.ok{border-left-color:var(--pos)}.alerts h3{margin:0 0 8px;font-size:14px}
+.alerts ul{margin:0;padding-left:18px}.alerts li{margin:4px 0;font-size:13px}
+.fx{color:var(--mut);font-size:12px;margin-top:18px}
+.flowarrow{color:#6366f1;font-weight:600}
+.hint{color:var(--mut);font-size:12px}.mut{color:var(--mut)}
+.missbox{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.misslbl{color:var(--mut);font-size:11px;margin-right:2px}
+.miss{display:inline-block;font-size:11px;color:var(--mut);background:#22252e;border:1px solid var(--line);border-radius:10px;padding:2px 8px}
+.tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:6px 0 10px;z-index:10}
+.tab{cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--mut);
+  padding:10px 18px;border-radius:12px;font-size:14px;font-weight:600;user-select:none;transition:.15s}
+.tab:hover{color:var(--txt)}
+.tab.active{background:var(--ac);color:#fff;border-color:var(--ac)}
+.page{display:none}.page.active{display:block}
+
+:root{--bg:#0f1115;--card:#1a1d24;--line:#2a2e37;--txt:#e6e8ec;--mut:#8b909a;--pos:#22c55e;--neg:#ef4444;--ac:#6366f1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,'Segoe UI','Apple SD Gothic Neo',sans-serif;padding:28px}
+h1{font-size:20px;margin:0 0 2px}.asof{color:var(--mut);font-size:13px;margin-bottom:20px}.mut{color:var(--mut);font-weight:400;font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card .lbl{color:var(--mut);font-size:13px;margin-bottom:6px}.card .big{font-size:23px;font-weight:700}
+.card .sub{color:var(--mut);font-size:12px;margin-top:5px}.pos{color:var(--pos)}.neg{color:var(--neg)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.panel h3{margin:0 0 14px;font-size:15px}
+.gauge{position:relative;height:16px;background:var(--line);border-radius:9px;overflow:visible;margin-bottom:10px}
+.gfill{height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:9px}
+.gtarget{position:absolute;top:-4px;width:2px;height:24px;background:#fff}
+.gtext{display:flex;justify-content:space-between;font-size:13px}
+.rw{margin-bottom:14px}.rwbar{height:8px;border-radius:5px;width:var(--w);min-width:6px}
+.rwbar.green{background:var(--pos)}.rwbar.blue{background:#3b82f6}.rwbar.yellow{background:#f59e0b}.rwbar.red{background:var(--neg)}
+.rwlab{display:flex;justify-content:space-between;font-size:13px;margin-top:5px}.rwlab b{font-size:14px}
+.rwsub{color:var(--mut);font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:500;padding:7px 5px;border-bottom:1px solid var(--line)}
+td{padding:9px 5px;border-bottom:1px solid var(--line)}.num{text-align:right}
+.hint{color:var(--mut);font-size:12px;margin-top:8px}.fx{color:var(--mut);font-size:12px;margin-top:18px}
+.warn{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:10px;padding:11px 13px;font-size:12.5px;margin-bottom:14px;line-height:1.5}
+.est{color:#f59e0b;font-size:11px;font-weight:600;margin-left:6px}
+</style></head><body>
+<h1>📊 포트폴리오 대시보드</h1>
+<div class="asof">기준 2026-06-28 19:03 · USD/KRW 1,535.0</div>
+<div class="tabs">
+  <div class="tab active" onclick="showPage('p1',this)">📊 포트폴리오</div>
+  <div class="tab" onclick="showPage('p2',this)">🎯 리밸런싱 · 계좌정리</div>
+  <div class="tab" onclick="showPage('p3',this)">🩺 재무건강</div>
+</div>
+<div id="p1" class="page active">
+<div class="cards">
+  <div class="card"><div class="lbl">총 평가금액</div><div class="big">130,498,774원</div></div>
+  <div class="card"><div class="lbl">총 평가손익</div><div class="big pos">7,416,554원</div></div>
+  <div class="card"><div class="lbl">총 수익률</div><div class="big pos">+6.03%</div></div>
+</div>
+<div class="grid">
+  <div><div class="panel"><div class="bhead">
+            <h3>🟢 1군 (Core)</h3><div class="bsum">100,645,431원
+            <span class="pos">6,659,566원 (+7.09%)</span>
+            <span class="bw">전체 77.1%</span></div></div>
+            <table><thead><tr><th>종목</th><th class="num">수량</th><th class="num">현재가</th>
+            <th class="num">평가금액</th><th class="num">손익률</th><th class="num">군내</th></tr></thead>
+            <tbody><tr><td><b>엔비디아</b><span class="tk">NVDA · Technology</span></td>
+              <td class="num">121</td><td class="num">$192.53</td>
+              <td class="num">35,759,559원</td>
+              <td class="num pos">+2.02%</td>
+              <td class="num">35.5%</td></tr><tr><td><b>SK하이닉스</b><span class="tk">000660 · 기타</span></td>
+              <td class="num">5</td><td class="num">2,673,000</td>
+              <td class="num">13,365,000원</td>
+              <td class="num pos">+1.72%</td>
+              <td class="num">13.3%</td></tr><tr><td><b>샌디스크</b><span class="tk">SNDK · Technology</span></td>
+              <td class="num">3</td><td class="num">$2,090.71</td>
+              <td class="num">9,627,719원</td>
+              <td class="num pos">+41.41%</td>
+              <td class="num">9.6%</td></tr><tr><td><b>마이크론</b><span class="tk">MU · Technology</span></td>
+              <td class="num">5</td><td class="num">$1,132.33</td>
+              <td class="num">8,690,632원</td>
+              <td class="num neg">-7.27%</td>
+              <td class="num">8.6%</td></tr><tr><td><b>삼성전자</b><span class="tk">005930 · 기타</span></td>
+              <td class="num">22</td><td class="num">339,500</td>
+              <td class="num">7,469,000원</td>
+              <td class="num neg">-1.54%</td>
+              <td class="num">7.4%</td></tr><tr><td><b>마벨</b><span class="tk">MRVL · Technology</span></td>
+              <td class="num">13</td><td class="num">$266.77</td>
+              <td class="num">5,323,395원</td>
+              <td class="num pos">+3.98%</td>
+              <td class="num">5.3%</td></tr><tr><td><b>ACE AI반도체TOP3+</b><span class="tk">469150 · 국내주식(반도체)</span></td>
+              <td class="num">63</td><td class="num">76,755</td>
+              <td class="num">4,835,565원</td>
+              <td class="num pos">+72.42%</td>
+              <td class="num">4.8%</td></tr><tr><td><b>TIGER 200</b><span class="tk">102110 · 국내주식</span></td>
+              <td class="num">32</td><td class="num">137,755</td>
+              <td class="num">4,408,160원</td>
+              <td class="num pos">+62.63%</td>
+              <td class="num">4.4%</td></tr><tr><td><b>DRAM (Roundhill Memory ETF)</b><span class="tk">DRAM · Unknown</span></td>
+              <td class="num">21</td><td class="num">$71.88</td>
+              <td class="num">2,317,052원</td>
+              <td class="num neg">-4.73%</td>
+              <td class="num">2.3%</td></tr><tr><td><b>삼성전기</b><span class="tk">009150 · 기타</span></td>
+              <td class="num">1</td><td class="num">1,993,000</td>
+              <td class="num">1,993,000원</td>
+              <td class="num neg">-10.23%</td>
+              <td class="num">2.0%</td></tr><tr><td><b>GE버노바</b><span class="tk">GEV · Industrials</span></td>
+              <td class="num">1</td><td class="num">$1,045.17</td>
+              <td class="num">1,604,336원</td>
+              <td class="num pos">+5.60%</td>
+              <td class="num">1.6%</td></tr><tr><td><b>KODEX 미국S&P500</b><span class="tk">379800 · 미국주식</span></td>
+              <td class="num">55</td><td class="num">25,410</td>
+              <td class="num">1,397,550원</td>
+              <td class="num pos">+12.93%</td>
+              <td class="num">1.4%</td></tr><tr><td><b>KODEX 미국나스닥100</b><span class="tk">379810 · 미국주식</span></td>
+              <td class="num">42</td><td class="num">29,615</td>
+              <td class="num">1,243,830원</td>
+              <td class="num neg">-2.24%</td>
+              <td class="num">1.2%</td></tr><tr><td><b>구글</b><span class="tk">GOOGL · Communication Services</span></td>
+              <td class="num">2</td><td class="num">$337.39</td>
+              <td class="num">1,035,787원</td>
+              <td class="num neg">-7.86%</td>
+              <td class="num">1.0%</td></tr><tr><td><b>KODEX 한국대만IT프리미어</b><span class="tk">298770 · 해외주식(IT)</span></td>
+              <td class="num">10</td><td class="num">96,160</td>
+              <td class="num">961,600원</td>
+              <td class="num neg">-2.45%</td>
+              <td class="num">1.0%</td></tr><tr><td><b>SOL AI반도체TOP2플러스</b><span class="tk">0167A0 · 국내주식(반도체)</span></td>
+              <td class="num">19</td><td class="num">26,025</td>
+              <td class="num">494,475원</td>
+              <td class="num pos">+4.68%</td>
+              <td class="num">0.5%</td></tr><tr><td><b>SK텔레콤</b><span class="tk">017670 · 기타</span></td>
+              <td class="num">1</td><td class="num">90,600</td>
+              <td class="num">90,600원</td>
+              <td class="num neg">-10.21%</td>
+              <td class="num">0.1%</td></tr><tr><td><b>ACE 미국S&P500</b><span class="tk">360200 · 미국주식</span></td>
+              <td class="num">1</td><td class="num">28,170</td>
+              <td class="num">28,170원</td>
+              <td class="num neg">-1.59%</td>
+              <td class="num">0.0%</td></tr></tbody></table><div class="missbox"><span class="misslbl">미보유</span><span class="miss">아마존</span> <span class="miss">브로드컴</span> <span class="miss">EWT</span> <span class="miss">이톤</span> <span class="miss">현대모비스</span></div></div><div class="panel"><div class="bhead">
+            <h3>🔵 2군 (Steady)</h3><div class="bsum">5,268,320원
+            <span class="pos">455,480원 (+9.46%)</span>
+            <span class="bw">전체 4.0%</span></div></div>
+            <table><thead><tr><th>종목</th><th class="num">수량</th><th class="num">현재가</th>
+            <th class="num">평가금액</th><th class="num">손익률</th><th class="num">군내</th></tr></thead>
+            <tbody><tr><td><b>ACE 미국S&P500미국채혼합50액티브</b><span class="tk">438080 · 채권혼합</span></td>
+              <td class="num">176</td><td class="num">15,200</td>
+              <td class="num">2,675,200원</td>
+              <td class="num pos">+6.45%</td>
+              <td class="num">50.8%</td></tr><tr><td><b>RISE 삼성전자SK하이닉스채권혼합50</b><span class="tk">0162Z0 · 채권혼합</span></td>
+              <td class="num">130</td><td class="num">15,600</td>
+              <td class="num">2,028,000원</td>
+              <td class="num pos">+18.90%</td>
+              <td class="num">38.5%</td></tr><tr><td><b>ACE KRX금현물</b><span class="tk">411060 · 금/원자재</span></td>
+              <td class="num">8</td><td class="num">27,120</td>
+              <td class="num">216,960원</td>
+              <td class="num neg">-8.83%</td>
+              <td class="num">4.1%</td></tr><tr><td><b>TIGER 조선TOP10</b><span class="tk">494670 · 국내주식(조선)</span></td>
+              <td class="num">8</td><td class="num">24,020</td>
+              <td class="num">192,160원</td>
+              <td class="num neg">-12.80%</td>
+              <td class="num">3.6%</td></tr><tr><td><b>RISE 삼성전자SK하이닉스채권혼합50</b><span class="tk">0162Z0 · 채권혼합</span></td>
+              <td class="num">10</td><td class="num">15,600</td>
+              <td class="num">156,000원</td>
+              <td class="num pos">+14.87%</td>
+              <td class="num">3.0%</td></tr></tbody></table><div class="missbox"><span class="misslbl">미보유</span><span class="miss">SCHD</span> <span class="miss">XLF</span> <span class="miss">JP모건</span> <span class="miss">GLD</span> <span class="miss">TJX</span> <span class="miss">코스트코</span> <span class="miss">조선TOP3 ETF</span> <span class="miss">일라이릴리</span></div></div><div class="panel"><div class="bhead">
+            <h3>🟠 3군 (Challenge)</h3><div class="bsum">12,601,785원
+            <span class="pos">513,349원 (+4.25%)</span>
+            <span class="bw">전체 9.7%</span></div></div>
+            <table><thead><tr><th>종목</th><th class="num">수량</th><th class="num">현재가</th>
+            <th class="num">평가금액</th><th class="num">손익률</th><th class="num">군내</th></tr></thead>
+            <tbody><tr><td><b>로켓랩</b><span class="tk">RKLB · Industrials</span></td>
+              <td class="num">42</td><td class="num">$84.54</td>
+              <td class="num">5,450,294원</td>
+              <td class="num pos">+23.70%</td>
+              <td class="num">43.3%</td></tr><tr><td><b>아이렌</b><span class="tk">IREN · Financial Services</span></td>
+              <td class="num">60</td><td class="num">$47.21</td>
+              <td class="num">4,348,041원</td>
+              <td class="num neg">-12.14%</td>
+              <td class="num">34.5%</td></tr><tr><td><b>오클로</b><span class="tk">OKLO · Utilities</span></td>
+              <td class="num">12</td><td class="num">$50.00</td>
+              <td class="num">921,000원</td>
+              <td class="num neg">-17.40%</td>
+              <td class="num">7.3%</td></tr><tr><td><b>테슬라</b><span class="tk">TSLA · Consumer Cyclical</span></td>
+              <td class="num">1</td><td class="num">$379.71</td>
+              <td class="num">582,855원</td>
+              <td class="num pos">+118.78%</td>
+              <td class="num">4.6%</td></tr><tr><td><b>현대차</b><span class="tk">005380 · 기타</span></td>
+              <td class="num">1</td><td class="num">480,500</td>
+              <td class="num">480,500원</td>
+              <td class="num neg">-21.74%</td>
+              <td class="num">3.8%</td></tr><tr><td><b>로빈후드</b><span class="tk">HOOD · Financial Services</span></td>
+              <td class="num">3</td><td class="num">$98.69</td>
+              <td class="num">454,467원</td>
+              <td class="num neg">-8.48%</td>
+              <td class="num">3.6%</td></tr><tr><td><b>1Q 미국우주항공테크</b><span class="tk">0131V0 · 미국주식(우주항공)</span></td>
+              <td class="num">16</td><td class="num">11,955</td>
+              <td class="num">191,280원</td>
+              <td class="num neg">-5.83%</td>
+              <td class="num">1.5%</td></tr><tr><td><b>팔란티어</b><span class="tk">PLTR · Technology</span></td>
+              <td class="num">1</td><td class="num">$112.93</td>
+              <td class="num">173,348원</td>
+              <td class="num pos">+355.30%</td>
+              <td class="num">1.4%</td></tr></tbody></table><div class="missbox"><span class="misslbl">미보유</span><span class="miss">인텔</span> <span class="miss">AMD</span> <span class="miss">네이버</span> <span class="miss">앤트로픽</span> <span class="miss">UFO/NASA</span> <span class="miss">스페이스X</span> <span class="miss">델컴퓨터</span> <span class="miss">BWX테크</span> <span class="miss">센트러스</span> <span class="miss">현대오토에버</span> <span class="miss">LG이노텍</span> <span class="miss">LG전자</span></div></div><div class="panel"><div class="bhead">
+            <h3>⚪ 미분류</h3><div class="bsum">11,983,239원
+            <span class="neg">-211,841원 (-1.74%)</span>
+            <span class="bw">전체 9.2%</span></div></div>
+            <table><thead><tr><th>종목</th><th class="num">수량</th><th class="num">현재가</th>
+            <th class="num">평가금액</th><th class="num">손익률</th><th class="num">군내</th></tr></thead>
+            <tbody><tr><td><b>서클</b><span class="tk">CRCL · Financial Services</span></td>
+              <td class="num">26</td><td class="num">$73.57</td>
+              <td class="num">2,936,179원</td>
+              <td class="num neg">-32.00%</td>
+              <td class="num">24.5%</td></tr><tr><td><b>모건스탠리</b><span class="tk">MS · Financial Services</span></td>
+              <td class="num">6</td><td class="num">$212.03</td>
+              <td class="num">1,952,796원</td>
+              <td class="num pos">+6.86%</td>
+              <td class="num">16.3%</td></tr><tr><td><b>루멘텀</b><span class="tk">LITE · Technology</span></td>
+              <td class="num">1</td><td class="num">$816.98</td>
+              <td class="num">1,254,064원</td>
+              <td class="num neg">-9.50%</td>
+              <td class="num">10.5%</td></tr><tr><td><b>크라우드스트라이크</b><span class="tk">CRWD · Technology</span></td>
+              <td class="num">1</td><td class="num">$701.09</td>
+              <td class="num">1,076,173원</td>
+              <td class="num pos">+49.37%</td>
+              <td class="num">9.0%</td></tr><tr><td><b>팔로알토네트웍스</b><span class="tk">PANW · Technology</span></td>
+              <td class="num">2</td><td class="num">$304.20</td>
+              <td class="num">933,894원</td>
+              <td class="num pos">+61.10%</td>
+              <td class="num">7.8%</td></tr><tr><td><b>QQQM (Invesco Nasdaq 100 ETF)</b><span class="tk">QQQM · Unknown</span></td>
+              <td class="num">2</td><td class="num">$290.95</td>
+              <td class="num">893,217원</td>
+              <td class="num neg">-3.44%</td>
+              <td class="num">7.5%</td></tr><tr><td><b>시스코</b><span class="tk">CSCO · Technology</span></td>
+              <td class="num">5</td><td class="num">$113.77</td>
+              <td class="num">873,185원</td>
+              <td class="num pos">+46.49%</td>
+              <td class="num">7.3%</td></tr><tr><td><b>TSMC</b><span class="tk">TSM · Technology</span></td>
+              <td class="num">1</td><td class="num">$432.35</td>
+              <td class="num">663,657원</td>
+              <td class="num pos">+115.66%</td>
+              <td class="num">5.5%</td></tr><tr><td><b>블룸에너지</b><span class="tk">BE · Industrials</span></td>
+              <td class="num">1</td><td class="num">$252.02</td>
+              <td class="num">386,851원</td>
+              <td class="num neg">-23.55%</td>
+              <td class="num">3.2%</td></tr><tr><td><b>인플렉션 (Infleqtion·양자컴퓨터)</b><span class="tk">INFQ · Technology</span></td>
+              <td class="num">13</td><td class="num">$13.63</td>
+              <td class="num">271,987원</td>
+              <td class="num neg">-4.78%</td>
+              <td class="num">2.3%</td></tr><tr><td><b>VT (Vanguard Total World ETF)</b><span class="tk">VT · Unknown</span></td>
+              <td class="num">1</td><td class="num">$153.95</td>
+              <td class="num">236,313원</td>
+              <td class="num pos">+48.33%</td>
+              <td class="num">2.0%</td></tr><tr><td><b>코어위브</b><span class="tk">CRWV · Technology</span></td>
+              <td class="num">1</td><td class="num">$96.58</td>
+              <td class="num">148,250원</td>
+              <td class="num neg">-17.29%</td>
+              <td class="num">1.2%</td></tr><tr><td><b>리오틴토</b><span class="tk">RIO · Basic Materials</span></td>
+              <td class="num">1</td><td class="num">$93.74</td>
+              <td class="num">143,891원</td>
+              <td class="num pos">+6.31%</td>
+              <td class="num">1.2%</td></tr><tr><td><b>CIBR (First Trust Cybersecurity ETF)</b><span class="tk">CIBR · Unknown</span></td>
+              <td class="num">1</td><td class="num">$85.36</td>
+              <td class="num">131,028원</td>
+              <td class="num pos">+1.70%</td>
+              <td class="num">1.1%</td></tr><tr><td><b>리커전파마</b><span class="tk">RXRX · Healthcare</span></td>
+              <td class="num">11</td><td class="num">$3.52</td>
+              <td class="num">59,435원</td>
+              <td class="num neg">-46.76%</td>
+              <td class="num">0.5%</td></tr><tr><td><b>마라홀딩스</b><span class="tk">MARA · Financial Services</span></td>
+              <td class="num">1</td><td class="num">$14.54</td>
+              <td class="num">22,319원</td>
+              <td class="num neg">-23.43%</td>
+              <td class="num">0.2%</td></tr></tbody></table></div></div>
+  <div><div class="panel"><h3>자산군 분산 (1·2·3군/미분류)</h3><div class="srow"><span class="slabel">1군</span>
+          <div class="sbar"><span style="width:77.1%;background:#22c55e"></span></div>
+          <span class="sval">77.1%<span class="mut" style="font-size:11px"> / 목표 50%</span></span></div><div class="srow"><span class="slabel">2군</span>
+          <div class="sbar"><span style="width:4.0%;background:#3b82f6"></span></div>
+          <span class="sval">4.0%<span class="mut" style="font-size:11px"> / 목표 20%</span></span></div><div class="srow"><span class="slabel">3군</span>
+          <div class="sbar"><span style="width:9.7%;background:#f59e0b"></span></div>
+          <span class="sval">9.7%<span class="mut" style="font-size:11px"> / 목표 10%</span></span></div><div class="srow"><span class="slabel">미분류</span>
+          <div class="sbar"><span style="width:9.2%;background:#8b909a"></span></div>
+          <span class="sval">9.2%<span class="mut" style="font-size:11px"></span></span></div></div>
+    <div class="panel"><h3>🚌 테마별 분산 (사이클 정류장)</h3><div class="srow"><span class="slabel" style="width:175px">①반도체(칩·메모리)</span>
+          <div class="sbar"><span style="width:70.1%;background:#22c55e"></span></div>
+          <span class="sval">70.1%</span></div><div class="srow"><span class="slabel" style="width:175px">②AI전력·인프라</span>
+          <div class="sbar"><span style="width:6.7%;background:#10b981"></span></div>
+          <span class="sval">6.7%</span></div><div class="srow"><span class="slabel" style="width:175px">③하이퍼스케일러·클라우드</span>
+          <div class="sbar"><span style="width:2.4%;background:#3b82f6"></span></div>
+          <span class="sval">2.4%</span></div><div class="srow"><span class="slabel" style="width:175px">④플랫폼·SW AI & 사이버보안</span>
+          <div class="sbar"><span style="width:2.4%;background:#6366f1"></span></div>
+          <span class="sval">2.4%</span></div><div class="srow"><span class="slabel" style="width:175px">⑤피지컬AI(로봇·자율주행)</span>
+          <div class="sbar"><span style="width:0.8%;background:#8b5cf6"></span></div>
+          <span class="sval">0.8%</span></div><div class="srow"><span class="slabel" style="width:175px">⑥양자컴퓨터</span>
+          <div class="sbar"><span style="width:0.2%;background:#a855f7"></span></div>
+          <span class="sval">0.2%</span></div><div class="srow"><span class="slabel" style="width:175px">⑦가치·방어주</span>
+          <div class="sbar"><span style="width:0.1%;background:#ec4899"></span></div>
+          <span class="sval">0.1%</span></div><div class="srow"><span class="slabel" style="width:175px">⑧바이오·헬스케어</span>
+          <div class="sbar"><span style="width:0.0%;background:#f43f5e"></span></div>
+          <span class="sval">0.0%</span></div><div class="srow"><span class="slabel" style="width:175px">⑨핀테크·디지털자산·코인</span>
+          <div class="sbar"><span style="width:2.6%;background:#f59e0b"></span></div>
+          <span class="sval">2.6%</span></div><div class="srow"><span class="slabel" style="width:175px">⑩우주·방산</span>
+          <div class="sbar"><span style="width:4.3%;background:#eab308"></span></div>
+          <span class="sval">4.3%</span></div><div class="srow"><span class="slabel" style="width:175px">⑪지수·광범위ETF</span>
+          <div class="sbar"><span style="width:10.2%;background:#14b8a6"></span></div>
+          <span class="sval">10.2%</span></div></div><div class="alerts"><h3>⚠ 쏠림 알림</h3><ul><li>종목 쏠림: 엔비디아 27.4% (기준 25%)</li><li>자산군 쏠림: Technology 49.7% (기준 40%)</li></ul></div></div>
+</div>
+</div><!-- /p1 -->
+<div id="p2" class="page">
+    <h1 style="margin-top:34px">🎯 리밸런싱 (목표 1군50·2군20·3군10·현금20)</h1>
+    <div class="panel"><h3>군별 목표 vs 현재</h3>
+      <table><thead><tr><th>그룹</th><th class="num">현재금액</th><th class="num">현재%</th>
+        <th class="num">목표%</th><th class="num">조정</th></tr></thead><tbody><tr><td><b>1군</b></td><td class="num">100,645,431원</td><td class="num">59.5%</td><td class="num mut">50%</td><td class="num" style="color:#f59e0b">16,053,063원 초과 ▼정리</td></tr><tr><td><b>2군</b></td><td class="num">5,268,320원</td><td class="num">3.1%</td><td class="num mut">20%</td><td class="num neg">28,568,627원 부족 ▲매수</td></tr><tr><td><b>3군</b></td><td class="num">12,601,785원</td><td class="num">7.4%</td><td class="num mut">10%</td><td class="num neg">4,316,689원 부족 ▲매수</td></tr><tr><td><b>현금성</b></td><td class="num">38,685,963원</td><td class="num">22.9%</td><td class="num mut">20%</td><td class="num" style="color:#f59e0b">4,849,016원 초과 ▼정리</td></tr><tr><td><b>미분류</b></td><td class="num">11,983,239원</td><td class="num">7.1%</td><td class="num mut">—</td><td class="num mut">정리 대상</td></tr></tbody></table>
+      <div class="hint">평가금액 기준. ▲매수=더 사야 / ▼정리=줄여야 / ≈맞음=목표 도달(±1%)</div>
+    </div>
+    <div class="panel"><h3>미분류 정리 후보 <span class="mut">· 군에 안 들어가는 일반계좌 개별주</span></h3>
+      <table><thead><tr><th>종목</th><th>티커</th><th class="num">평가금액</th><th>계좌</th></tr></thead>
+        <tbody><tr><td>서클</td><td class="mut">CRCL</td><td class="num">2,936,179원</td><td class="mut">일반</td></tr><tr><td>모건스탠리</td><td class="mut">MS</td><td class="num">1,952,796원</td><td class="mut">일반</td></tr><tr><td>루멘텀</td><td class="mut">LITE</td><td class="num">1,254,064원</td><td class="mut">일반</td></tr><tr><td>크라우드스트라이크</td><td class="mut">CRWD</td><td class="num">1,076,173원</td><td class="mut">일반</td></tr><tr><td>팔로알토네트웍스</td><td class="mut">PANW</td><td class="num">933,894원</td><td class="mut">일반</td></tr><tr><td>QQQM (Invesco Nasdaq 100 ETF)</td><td class="mut">QQQM</td><td class="num">893,217원</td><td class="mut">일반</td></tr><tr><td>시스코</td><td class="mut">CSCO</td><td class="num">873,185원</td><td class="mut">일반</td></tr><tr><td>TSMC</td><td class="mut">TSM</td><td class="num">663,657원</td><td class="mut">일반</td></tr><tr><td>블룸에너지</td><td class="mut">BE</td><td class="num">386,851원</td><td class="mut">일반</td></tr><tr><td>인플렉션 (Infleqtion·양자컴퓨터)</td><td class="mut">INFQ</td><td class="num">271,987원</td><td class="mut">일반</td></tr><tr><td>VT (Vanguard Total World ETF)</td><td class="mut">VT</td><td class="num">236,313원</td><td class="mut">일반</td></tr><tr><td>코어위브</td><td class="mut">CRWV</td><td class="num">148,250원</td><td class="mut">일반</td></tr><tr><td>리오틴토</td><td class="mut">RIO</td><td class="num">143,891원</td><td class="mut">일반</td></tr><tr><td>CIBR (First Trust Cybersecurity ETF)</td><td class="mut">CIBR</td><td class="num">131,028원</td><td class="mut">일반</td></tr><tr><td>리커전파마</td><td class="mut">RXRX</td><td class="num">59,435원</td><td class="mut">일반</td></tr><tr><td>마라홀딩스</td><td class="mut">MARA</td><td class="num">22,319원</td><td class="mut">일반</td></tr></tbody></table>
+      <div class="hint">이걸 정리하면 부족한 2·3군 채울 재원이 됨. 어떤 걸 남길지는 직접 선택.</div>
+    </div>
+    <div class="panel"><h3>부족 군 매수 후보</h3><div class="cand"><b>2군</b> 28,568,627원 더 채우기 — 후보: <span class="mut">SCHD · JP모건(JPM) · GLD · 코스트코(COST) · TJX · 일라이릴리(LLY) · XLF</span></div><div class="cand"><b>3군</b> 4,316,689원 더 채우기 — 후보: <span class="mut">AMD · 팔란티어(PLTR) · 로켓랩(RKLB) · SPCX · 로빈후드(HOOD) · 오클로(OKLO) · BWXT · LEU</span></div>
+      <div class="hint">그룹별 부족액만 표시. 종목별 금액은 비중 안 정했으니 후보 중 직접 선택.</div>
+    </div>
+    <h1 style="margin-top:34px">📦 계좌 정리 <span class="mut">· 이동 대상 7종목</span></h1>
+    <div class="panel"><div class="hint" style="margin-bottom:10px">계좌 역할: 삼성7081=미국 1군 · 키움5154=국내주식 전부 + 미국 2군 · 키움5978=미국 3군 · 미래에셋356=그 외 (미분류)</div>
+      <table><thead><tr><th>종목</th><th>티커</th><th class="num">수량</th><th>현재</th><th>목표</th><th class="num">평가금액</th></tr></thead>
+      <tbody><tr><td>RKLB</td><td class="mut">RKLB</td><td class="num">29주</td><td>삼성7081</td><td class="flowarrow">→ 키움5978</td><td class="num">3,763,298원</td></tr><tr><td>IREN</td><td class="mut">IREN</td><td class="num">45주</td><td>삼성7081</td><td class="flowarrow">→ 키움5978</td><td class="num">3,261,031원</td></tr><tr><td>SNDK</td><td class="mut">SNDK</td><td class="num">1주</td><td>키움5978</td><td class="flowarrow">→ 삼성7081</td><td class="num">3,209,240원</td></tr><tr><td>DRAM</td><td class="mut">DRAM</td><td class="num">21주</td><td>키움5978</td><td class="flowarrow">→ 삼성7081</td><td class="num">2,317,052원</td></tr><tr><td>GEV</td><td class="mut">GEV</td><td class="num">1주</td><td>키움5978</td><td class="flowarrow">→ 삼성7081</td><td class="num">1,604,336원</td></tr><tr><td>TSLA</td><td class="mut">TSLA</td><td class="num">1주</td><td>키움5154</td><td class="flowarrow">→ 키움5978</td><td class="num">582,855원</td></tr><tr><td>PLTR</td><td class="mut">PLTR</td><td class="num">1주</td><td>키움5154</td><td class="flowarrow">→ 키움5978</td><td class="num">173,348원</td></tr></tbody></table>
+      <div class="hint">목표 계좌와 다른 위치에 있는 종목입니다. 매도→이체→매수로 이동(미분류는 일부 미래에셋 이관 / 나머지 현금화).</div>
+    </div></div>
+<div id="p3" class="page">
+    <div class="cards">
+      <div class="card"><div class="lbl">순자산</div><div class="big pos">74,196,757원</div>
+        <div class="sub">자산 18,137만 − 대출 10,718만</div></div>
+      <div class="card"><div class="lbl">현금 비중</div><div class="big pos">21.3%</div>
+        <div class="sub">목표 20% · 부족 0만원</div></div>
+      <div class="card"><div class="lbl">월 대출 상환</div><div class="big">542,718원</div>
+        <div class="sub">이자 451,051원 + 원금 91,667원</div></div>
+    </div>
+
+    <div class="panel"><h3>현금 비중 <span class="mut">(목표 20%)</span></h3>
+      <div class="gauge"><div class="gfill" style="width:21.3%"></div>
+        <div class="gtarget" style="left:20%"></div></div>
+      <div class="gtext"><span class="pos">현재 21.3%</span>
+        <span class="mut">목표 20%까지 0만원 부족</span></div>
+    </div>
+
+    <div class="panel"><h3>대출 상환 감당 기간 · 생활비 미반영</h3>
+      <div class="warn">⚠ 이건 <b>대출 이자·원금만 감당하는 기간</b>이라 실제 생존 기간이 아니에요. 생활비를 더하면 훨씬 짧아집니다. finance.yaml의 monthly_living을 채우면 진짜 생존 runway가 나와요.</div>
+      <div class="rw"><div class="rwbar green" style="--w:26%"></div><div class="rwlab"><span>🟢 현금만</span><b>71.3개월 <span class="est">생활비 추정 시 12.7개월</span></b></div><div class="rwsub">진짜 안전선 · 3,869만원</div></div><div class="rw"><div class="rwbar yellow" style="--w:53%"></div><div class="rwlab"><span>🟡 +마이너스 여력</span><b>147.5개월 <span class="est">생활비 추정 시 26.3개월</span></b></div><div class="rwsub">쓰면 빚 4,134만원 늘어남</div></div><div class="rw"><div class="rwbar red" style="--w:100%"></div><div class="rwlab"><span>🔴 +주식 처분</span><b>278.2개월 <span class="est">생활비 추정 시 49.6개월</span></b></div><div class="rwsub">손실 매도 가정</div></div>
+      <div class="hint">월 유출 542,718원 기준 (대출 상환만).</div>
+    </div>
+
+    <div class="panel"><h3>대출 현황 <span class="mut">· 7건 · 합 10,718만원</span></h3>
+      <table><thead><tr><th>대출</th><th class="num">잔액</th><th class="num">금리</th>
+        <th class="num">월상환</th><th>유형</th></tr></thead><tbody><tr><td>신한 신용</td><td class="num">33,756,739원</td>
+          <td class="num">4.76%</td><td class="num">133,902원</td><td>이자</td></tr><tr><td>제주 직장인</td><td class="num">23,000,000원</td>
+          <td class="num">4.70%</td><td class="num">90,083원</td><td>만기일시</td></tr><tr><td>카뱅 마이너스(사용분)</td><td class="num">16,655,126원</td>
+          <td class="num">5.59%</td><td class="num">77,613원</td><td>마이너스</td></tr><tr><td>신한 예금담보</td><td class="num">12,585,461원</td>
+          <td class="num">5.50%</td><td class="num">57,683원</td><td>이자</td></tr><tr><td>신한 청약담보(야탑)</td><td class="num">12,481,489원</td>
+          <td class="num">4.10%</td><td class="num">42,645원</td><td>이자</td></tr><tr><td>제주 사잇돌</td><td class="num">6,600,000원</td>
+          <td class="num">7.60%</td><td class="num">133,467원</td><td>원금분할</td></tr><tr><td>신한 청약담보(서교동)</td><td class="num">2,097,743원</td>
+          <td class="num">4.19%</td><td class="num">7,325원</td><td>이자</td></tr></tbody></table>
+    </div></div>
+<div class="fx">시세·환율은 마지막 종가 기준이며 실시간 호가와 다를 수 있습니다. 연금(DC·IRP)은 인출 제한이 있어 일반 계좌와 성격이 다릅니다.</div>
+<script>
+function showPage(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body></html>

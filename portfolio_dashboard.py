@@ -78,6 +78,11 @@ def load_holdings_from_sheet():
                 continue
             mk = "US" if (r.get("시장") or "").strip() in ("미국", "US") else "KR"
             acc = (r.get("계좌") or "").strip()
+            target_raw = (r.get("목표가") or "").replace(",", "").replace("$", "").replace("원", "").strip()
+            try:
+                target_sheet = float(target_raw) if target_raw else None
+            except ValueError:
+                target_sheet = None
             rows.append({
                 "bucket": _bucket_from_account(acc),
                 "account": acc,
@@ -87,6 +92,8 @@ def load_holdings_from_sheet():
                 "avg_cost": avg_map.get(t, 0.0),   # native 평단(로컬). 신규종목은 0
                 "name": (r.get("종목명") or "").strip(),
                 "sector": "",
+                "memo": (r.get("메모") or "").strip(),
+                "target_sheet": target_sheet,   # 구글시트 목표가(우선)
             })
         return rows if rows else None
     except Exception as e:
@@ -157,21 +164,24 @@ def get_us_quote(h):
     if not price:
         price = float(t.history(period="5d")["Close"].dropna().iloc[-1])
     name, sector = h["name"] or h["ticker"], h["sector"] or "Unknown"
-    if not h["name"] or not h["sector"]:
-        try:
-            info = t.info
-            if not h["name"]:   name = info.get("shortName") or name
-            if not h["sector"]: sector = info.get("sector") or sector
-        except Exception:
-            pass
-    return price, name, sector
+    target = None
+    try:
+        info = t.info
+        if not h["name"]:   name = info.get("shortName") or name
+        if not h["sector"]: sector = info.get("sector") or sector
+        tm = info.get("targetMeanPrice")     # 애널리스트 목표가 평균
+        if tm:
+            target = float(tm)
+    except Exception:
+        pass
+    return price, name, sector, target
 
 def fetch_quote(h):
     if h["market"] == "KR":
-        p, n, s = get_kr_quote(h); cur = "KRW"
+        p, n, s = get_kr_quote(h); cur = "KRW"; target = None
     else:
-        p, n, s = get_us_quote(h); cur = "USD"
-    return {"price": p, "name": n, "sector": s, "currency": cur}
+        p, n, s, target = get_us_quote(h); cur = "USD"
+    return {"price": p, "name": n, "sector": s, "currency": cur, "target": target}
 
 
 # ── 계산 ────────────────────────────────────────────────
@@ -200,10 +210,17 @@ def compute(holdings, quotes, usdkrw, config):
                         "name": display_names.get(h["ticker"], q["name"]), "market": h["market"],
                         "sector": h["sector"] or q["sector"],
                         "currency": q["currency"], "price": q["price"],
-                        "shares": 0.0, "cost_native": 0.0}
+                        "shares": 0.0, "cost_native": 0.0,
+                        "memo": h.get("memo", ""),
+                        "target": h.get("target_sheet") or q.get("target")}
         a = agg[key]
         a["shares"] += h["shares"]
         a["cost_native"] += h["avg_cost"] * h["shares"]
+        if h.get("memo") and not a.get("memo"):
+            a["memo"] = h["memo"]
+        # 목표가: 시트값 우선, 없으면 yfinance
+        if not a.get("target"):
+            a["target"] = h.get("target_sheet") or q.get("target")
 
     rows = []
     for a in agg.values():
@@ -366,11 +383,24 @@ def render_html(d, config=None):
         for r in grs:
             cls = "pos" if r["pnl_krw"] >= 0 else "neg"
             nat = f"${r['price']:,.2f}" if r["currency"]=="USD" else f"{r['price']:,.0f}"
+            # 목표가 + 도달률
+            tgt = r.get("target")
+            if tgt:
+                tgt_str = f"${tgt:,.2f}" if r["currency"]=="USD" else f"{tgt:,.0f}"
+                reach = (r["price"]/tgt*100) if tgt else 0
+                rcls = "pos" if reach < 100 else "neg"
+                price_cell = (f'{nat}<span class="tgt">목표 {tgt_str} '
+                              f'<span class="{rcls}">({reach:.0f}%)</span></span>')
+            else:
+                price_cell = nat
+            memo = r.get("memo", "")
+            memo_cell = f'<span class="memo">{memo}</span>' if memo else '<span class="memo-empty">—</span>'
             tr += f"""<tr><td><b>{r['name']}</b><span class="tk">{r['ticker']} · {r['sector']}</span></td>
-              <td class="num">{r['shares']:g}</td><td class="num">{nat}</td>
+              <td class="num">{r['shares']:g}</td><td class="num">{price_cell}</td>
               <td class="num">{won(r['value_krw'])}</td>
               <td class="num {cls}">{pct(r['pnl_pct'])}</td>
-              <td class="num">{r['group_weight']*100:.1f}%</td></tr>"""
+              <td class="num">{r['group_weight']*100:.1f}%</td>
+              <td class="memocol">{memo_cell}</td></tr>"""
         # 미보유 종목 (이미지엔 있으나 내 계좌엔 없는 것)
         missing_html = ""
         if g in roster:
@@ -384,7 +414,7 @@ def render_html(d, config=None):
             <span class="{bpc}">{won(s['pnl'])} ({pct(s['pnl_pct'])})</span>
             <span class="bw">전체 {s['weight']*100:.1f}%</span></div></div>
             <table><thead><tr><th>종목</th><th class="num">수량</th><th class="num">현재가</th>
-            <th class="num">평가금액</th><th class="num">손익률</th><th class="num">군내</th></tr></thead>
+            <th class="num">평가금액</th><th class="num">손익률</th><th class="num">군내</th><th>메모</th></tr></thead>
             <tbody>{tr}</tbody></table>{missing_html}</div>"""
 
     # 자산군 분산 → 군별 비중
@@ -455,6 +485,9 @@ td{{padding:9px 5px;border-bottom:1px solid var(--line)}}.num{{text-align:right}
 .missbox{{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center}}
 .misslbl{{color:var(--mut);font-size:11px;margin-right:2px}}
 .miss{{display:inline-block;font-size:11px;color:var(--mut);background:#22252e;border:1px solid var(--line);border-radius:10px;padding:2px 8px}}
+.memocol{{max-width:220px;font-size:12px;color:#cbd2dc;white-space:normal;line-height:1.4}}
+.memo{{color:#cbd2dc}}.memo-empty{{color:#4b5563}}
+.tgt{{display:block;font-size:11px;color:var(--mut);margin-top:2px;font-weight:400}}
 .tabs{{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);padding:6px 0 10px;z-index:10}}
 .tab{{cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--mut);
   padding:10px 18px;border-radius:12px;font-size:14px;font-weight:600;user-select:none;transition:.15s}}
